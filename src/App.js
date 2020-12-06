@@ -75,7 +75,6 @@ class App extends React.Component {
     path.forEach(s => {
       if (s == "root") curChildren = this.struct.children;
       else curChildren = curChildren[s].children;
-      console.log({ curChildren });
     });
 
     // update state
@@ -132,7 +131,7 @@ class App extends React.Component {
             <div className="title">Files</div>
             {this.state.files.map((f, i) => (
               <div className="file" key={i}>
-                {f}{" "}
+                {f}
               </div>
             ))}
           </div>
