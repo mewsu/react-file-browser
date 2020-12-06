@@ -66,7 +66,6 @@ class App extends React.Component {
       this.struct = d;
       this.getPathContent(this.state.path);
     });
-    // console.log(this.struct);
   }
 
   getPathContent(path) {
@@ -80,7 +79,6 @@ class App extends React.Component {
     });
 
     // update state
-    // console.log(curChildren);
     this.setState({
       folders: Object.keys(curChildren).filter(
         c => curChildren[c].type == "dir"
@@ -94,13 +92,11 @@ class App extends React.Component {
 
   handleDirClick(d) {
     const path = [...this.state.path, d];
-    // console.log("nav to path", path);
     this.getPathContent(path);
   }
 
   handlePathClick(i) {
     // make path up to i
-    // console.log("to path seg ", i);
     this.getPathContent(this.state.path.slice(0, i + 1));
   }
 
