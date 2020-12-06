@@ -7,7 +7,8 @@ class App extends React.Component {
     this.state = {
       path: ["root"],
       folders: [],
-      files: []
+      files: [],
+      isFile: null
     };
     this.struct = null;
   }
@@ -85,13 +86,18 @@ class App extends React.Component {
       files: Object.keys(curChildren).filter(
         c => curChildren[c].type == "file"
       ),
-      path
+      path,
+      isFile: null
     });
   }
 
   handleDirClick(d) {
     const path = [...this.state.path, d];
     this.getPathContent(path);
+  }
+
+  handleFileClick(f) {
+    this.setState({ isFile: f, path: [...this.state.path, f] });
   }
 
   handlePathClick(i) {
@@ -110,32 +116,45 @@ class App extends React.Component {
               key={i}
               onClick={() => this.handlePathClick(i)}
             >
-              {s}/
+              {s}
+              {i != this.state.path.length - 1
+                ? "/"
+                : this.state.isFile
+                ? ""
+                : "/"}
             </span>
           ))}
         </div>
-        <div id="sub-container">
-          <div className="sub">
-            <div className="title">Folders</div>
-            {this.state.folders.map((f, i) => (
-              <div
-                className="folder"
-                key={i}
-                onClick={() => this.handleDirClick(f)}
-              >
-                {f}
-              </div>
-            ))}
+        {this.state.isFile ? (
+          <div id="file-container">This is file: {this.state.isFile}</div>
+        ) : (
+          <div id="sub-container">
+            <div className="sub">
+              <div className="title">Folders</div>
+              {this.state.folders.map((f, i) => (
+                <div
+                  className="folder"
+                  key={i}
+                  onClick={() => this.handleDirClick(f)}
+                >
+                  {f}
+                </div>
+              ))}
+            </div>
+            <div className="sub">
+              <div className="title">Files</div>
+              {this.state.files.map((f, i) => (
+                <div
+                  className="file"
+                  key={i}
+                  onClick={() => this.handleFileClick(f)}
+                >
+                  {f}
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="sub">
-            <div className="title">Files</div>
-            {this.state.files.map((f, i) => (
-              <div className="file" key={i}>
-                {f}
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     );
   }
