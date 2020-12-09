@@ -5,17 +5,17 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      path: ["root"],
+      path: ["home"],
       folders: [],
       files: [],
       isFile: null
     };
-    this.struct = null;
   }
 
-  getContents = async function() {
+  getContents = async function(path) {
     // if path is a dir, returns the files or subdirectories in the dir, and their types, as well as the metadata (name and type) of the current directory
     // if path is a file, returns the metadata (name and type) of the file
+    // returns null if invalid path
     let root = {
       type: "dir",
       children: {
@@ -45,13 +45,8 @@ class App extends React.Component {
                   }
                 }
               }
-            }
-          }
-        },
-        anotherhome: {
-          type: "dir",
-          children: {
-            file1: {
+            },
+            testfile1: {
               type: "file"
             }
           }
@@ -59,41 +54,46 @@ class App extends React.Component {
       }
     };
 
-    return root;
+    const isFile = path[path.length - 1] === "/";
+    // navigate to path folder or file
+    let content = root.children;
+
+    (isFile ? path.slice(0, path.length - 1) : path)
+      .split("/")
+      .forEach((s, i, a) => {
+        if (i == a.length - 1 && isFile) {
+          content = content
+            ? Object.keys(content).filter(
+                c => c == s && content[c].type == "file"
+              )
+            : null;
+        } else {
+          content = content && content[s] ? content[s].children : null;
+        }
+      });
+
+    return content;
   };
 
   componentDidMount() {
-    this.getContents().then(d => {
-      this.struct = d;
-      this.getPathContent(this.state.path);
-    });
+    this.updateFolderContent(this.state.path);
   }
 
-  getPathContent(path) {
-    // navigate to path folder
-    let curChildren;
-
-    path.forEach(s => {
-      if (s == "root") curChildren = this.struct.children;
-      else curChildren = curChildren[s].children;
-    });
-
-    // update state
-    this.setState({
-      folders: Object.keys(curChildren).filter(
-        c => curChildren[c].type == "dir"
-      ),
-      files: Object.keys(curChildren).filter(
-        c => curChildren[c].type == "file"
-      ),
-      path,
-      isFile: null
+  updateFolderContent(path) {
+    this.getContents(path.join("/")).then(content => {
+      // update state
+      this.setState({
+        folders: Object.keys(content).filter(c => content[c].type == "dir"),
+        files: Object.keys(content).filter(c => content[c].type == "file"),
+        path,
+        isFile: null
+      });
     });
   }
 
   handleDirClick(d) {
     const path = [...this.state.path, d];
-    this.getPathContent(path);
+    this.updateFolderContent(path);
   }
 
   handleFileClick(f) {
@@ -102,7 +102,7 @@ class App extends React.Component {
 
   handlePathClick(i) {
     // make path up to i
-    this.getPathContent(this.state.path.slice(0, i + 1));
+    this.updateFolderContent(this.state.path.slice(0, i + 1));
   }
 
   render() {
@@ -110,11 +110,13 @@ class App extends React.Component {
       <div id="main">
         <div>
           <div className="title">Current Path</div>
-          {this.state.path.map((s, i) => (
+          {this.state.path.map((s, i, a) => (
             <span
               className="dir-seg"
               key={i}
-              onClick={() => this.handlePathClick(i)}
+              onClick={() => {
+                !(i == a.length - 1) && this.handlePathClick(i);
+              }}
             >
               {s}
               {i != this.state.path.length - 1
